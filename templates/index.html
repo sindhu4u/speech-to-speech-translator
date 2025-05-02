@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Translator</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="text-center my-5">
+            <h1 class="display-4 fw-bold"><i class="fas fa-language"></i> Multilingual Speech Translator</h1>
+            <p class="lead">Record speech, translate it, and hear it in your chosen language!</p>
+        </header>
+
+        <!-- Loading Screen -->
+        <div id="loadingScreen" class="loading-screen">
+            <div class="loader-container">
+                <div class="loader"></div>
+                <p id="loadingMessage">Loading Models...</p>
+                <div class="progress mt-3">
+                    <div id="loadingBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Container -->
+        <div id="mainContainer" class="main-container d-none">
+            <div class="row justify-content-center">
+                <div class="col-md-10">
+                    <div class="card main-card">
+                        <div class="card-body">
+                            <!-- Recording Section -->
+                            <div class="recording-section text-center mb-4">
+                                <div class="microphone-container mb-3">
+                                    <div id="micAnimation" class="microphone">
+                                        <i class="fas fa-microphone fa-3x"></i>
+                                        <div class="mic-waves">
+                                            <div class="wave"></div>
+                                            <div class="wave"></div>
+                                            <div class="wave"></div>
+                                            <div class="wave"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="btn-group" role="group">
+                                    <button id="recordButton" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-microphone"></i> Start Recording
+                                    </button>
+                                    <button id="stopButton" class="btn btn-danger btn-lg d-none">
+                                        <i class="fas fa-stop"></i> Stop Recording
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Language Selection -->
+                            <div class="form-group mb-4">
+                                <label for="targetLanguage" class="form-label">
+                                    <i class="fas fa-globe"></i> Target Language:
+                                </label>
+                                <select id="targetLanguage" class="form-select">
+                                    {% for lang in supported_langs %}
+                                    <option value="{{ lang }}">{{ lang }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Audio Visualization -->
+                            <div id="waveformContainer" class="waveform-container mb-4 d-none">
+                                <h5><i class="fas fa-waveform"></i> Audio Waveform:</h5>
+                                <div id="waveform"></div>
+                                <div class="d-flex justify-content-center mt-2">
+                                    <button id="playRecording" class="btn btn-sm btn-secondary me-2">
+                                        <i class="fas fa-play"></i> Play
+                                    </button>
+                                    <button id="clearRecording" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i> Clear
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Translating Indicator -->
+                            <div id="translatingIndicator" class="translating-indicator d-none">
+                                <div class="translating-animation">
+                                    <i class="fas fa-cog fa-spin"></i>
+                                    <i class="fas fa-language fa-bounce"></i>
+                                    <i class="fas fa-volume-high fa-shake"></i>
+                                </div>
+                                <p>Translating and generating speech...</p>
+                            </div>
+
+                            <!-- Results Section -->
+                            <div id="resultsSection" class="results-section d-none">
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0"><i class="fas fa-comment-dots"></i> Original Text</h5>
+                                            <span id="detectedLanguage" class="badge bg-info">Detected: English</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <p id="sourceText" class="mb-0"></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0"><i class="fas fa-language"></i> Translated Text</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <p id="translatedText" class="mb-0"></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="card mb-3">
+                                    <div class="card-header bg-light">
+                                        <h5 class="mb-0"><i class="fas fa-volume-high"></i> Generated Speech</h5>
+                                    </div>
+                                    <div class="card-body text-center">
+                                        <audio id="audioOutput" controls class="w-100"></audio>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button id="newTranslationButton" class="btn btn-primary">
+                                        <i class="fas fa-plus-circle"></i> New Translation
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Error Section -->
+                            <div id="errorSection" class="alert alert-danger d-none" role="alert">
+                                <h5><i class="fas fa-exclamation-triangle"></i> Error</h5>
+                                <p id="errorMessage"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer text-center py-3 mt-5">
+        <p>Speech-to-Speech Translation System | <i class="fas fa-code"></i> with <i class="fas fa-heart"></i></p>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- WaveSurfer.js -->
+    <script src="https://unpkg.com/wavesurfer.js@6.6.4/dist/wavesurfer.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/recorder.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
