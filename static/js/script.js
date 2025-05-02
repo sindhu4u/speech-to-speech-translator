@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const errorMessage = document.getElementById('errorMessage');
     const newTranslationButton = document.getElementById('newTranslationButton');
     const targetLanguage = document.getElementById('targetLanguage');
+    const audioFileUpload = document.getElementById('audioFileUpload');
+    const uploadFileName = document.getElementById('uploadFileName');
 
     // Global variables
     let recorder = null;
@@ -141,6 +143,12 @@ document.addEventListener('DOMContentLoaded', function() {
         audioBlob = null;
         waveformContainer.classList.add('d-none');
         hideResults();
+        
+        // Reset file upload if exists
+        if (audioFileUpload.value) {
+            audioFileUpload.value = '';
+            uploadFileName.classList.add('d-none');
+        }
     }
 
     // Show translation progress
@@ -199,9 +207,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Send audio for processing
-    async function processAudio() {
-        if (!audioBlob) {
-            showError('No audio recording found. Please record audio first.');
+    async function processAudio(uploadedFile = null) {
+        // If neither recorded audio nor uploaded file is available
+        if (!audioBlob && !uploadedFile) {
+            showError('No audio found. Please record or upload audio first.');
             return;
         }
 
@@ -213,12 +222,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const formData = new FormData();
             formData.append('targetLanguage', targetLanguage.value);
             
-            // Convert blob to base64
-            const reader = new FileReader();
-            reader.readAsDataURL(audioBlob);
-            reader.onloadend = async function() {
-                const base64Audio = reader.result;
-                formData.append('audio_data', base64Audio);
+            if (uploadedFile) {
+                // Use the uploaded file directly
+                formData.append('audio', uploadedFile);
                 
                 // Send to server
                 const response = await fetch('/upload-audio', {
@@ -234,7 +240,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     showError(data.error || 'Unknown error occurred');
                 }
-            };
+            } else {
+                // Convert blob to base64
+                const reader = new FileReader();
+                reader.readAsDataURL(audioBlob);
+                reader.onloadend = async function() {
+                    const base64Audio = reader.result;
+                    formData.append('audio_data', base64Audio);
+                    
+                    // Send to server
+                    const response = await fetch('/upload-audio', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    hideTranslating();
+                    
+                    if (data.success) {
+                        showResults(data);
+                    } else {
+                        showError(data.error || 'Unknown error occurred');
+                    }
+                };
+            }
         } catch (err) {
             hideTranslating();
             showError(`Error: ${err.message}`);
@@ -301,6 +330,34 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Handle file upload
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        // Display the file name
+        const fileNameSpan = uploadFileName.querySelector('span');
+        fileNameSpan.textContent = file.name;
+        uploadFileName.classList.remove('d-none');
+        
+        // Reset UI
+        hideResults();
+        hideError();
+        
+        // If there's a recorded audio, clear it
+        if (audioBlob) {
+            clearAudioRecording();
+        }
+        
+        // Load the file to wavesurfer
+        const fileURL = URL.createObjectURL(file);
+        wavesurfer.load(fileURL);
+        waveformContainer.classList.remove('d-none');
+        
+        // Process the file
+        processAudio(file);
+    }
+
     // Event listeners
     recordButton.addEventListener('click', startRecording);
     stopButton.addEventListener('click', stopRecording);
@@ -308,12 +365,13 @@ document.addEventListener('DOMContentLoaded', function() {
     clearRecording.addEventListener('click', clearAudioRecording);
     stopButton.addEventListener('click', function() {
         stopRecording();
-        setTimeout(processAudio, 1000); // Process after a short delay
+        setTimeout(() => processAudio(), 1000); // Process after a short delay
     });
     newTranslationButton.addEventListener('click', function() {
         hideResults();
         waveformContainer.classList.remove('d-none');
     });
+    audioFileUpload.addEventListener('change', handleFileUpload);
 
     // Initialize the application
     initialize();

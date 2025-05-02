@@ -49,13 +49,23 @@
                                     </div>
                                 </div>
                                 
-                                <div class="btn-group" role="group">
+                                <div class="btn-group mb-3" role="group">
                                     <button id="recordButton" class="btn btn-primary btn-lg">
                                         <i class="fas fa-microphone"></i> Start Recording
                                     </button>
                                     <button id="stopButton" class="btn btn-danger btn-lg d-none">
                                         <i class="fas fa-stop"></i> Stop Recording
                                     </button>
+                                </div>
+                                
+                                <!-- File Upload Option -->
+                                <div class="file-upload-container">
+                                    <p class="text-muted mb-2">- OR -</p>
+                                    <label for="audioFileUpload" class="btn btn-outline-primary">
+                                        <i class="fas fa-upload"></i> Upload Audio File
+                                    </label>
+                                    <input type="file" id="audioFileUpload" class="d-none" accept="audio/*">
+                                    <p id="uploadFileName" class="small text-muted mt-2 d-none">Selected file: <span></span></p>
                                 </div>
                             </div>
 
