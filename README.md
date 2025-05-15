@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Multilingual Speech-to-Speech Translation Web App
 
 This web application provides a user-friendly interface for multilingual speech-to-speech translation. It allows users to record speech in one language, have it translated to another language, and then hear the translated speech.
@@ -52,3 +53,6 @@ This web application provides a user-friendly interface for multilingual speech-
 1. Clone the repository
 2. Install the required packages:
 
+=======
+# speech-to-speech-translator
+>>>>>>> 4fe1a8af7e3e2f8ad491aac834ee71028a68a5a5
