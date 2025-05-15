@@ -6,3 +6,4 @@ transformers
 datasets
 soundfile
 flask
+gunicorn
