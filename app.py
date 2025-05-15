@@ -17,6 +17,8 @@ import soundfile as sf
 
 # Flask app
 app = Flask(__name__)
+from flask_cors import CORS
+CORS(app)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev_key")
 
 UPLOAD_FOLDER = 'temp_uploads'
