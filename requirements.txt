@@ -2,3 +2,7 @@ jiwer
 torch
 openai-whisper
 numpy
+transformers
+datasets
+soundfile
+flask
