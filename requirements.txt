@@ -8,3 +8,4 @@ soundfile
 flask
 flask-cors
 gunicorn
+pyaudio
