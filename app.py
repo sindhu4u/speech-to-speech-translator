@@ -51,7 +51,7 @@ def load_models():
     try:
         model_status["loading"] = True
         logger.info("Loading Whisper...")
-        asr_model = whisper.load_model("base")
+        asr_model = whisper.load_model("tiny")
 
         logger.info("Loading M2M100...")
         translator_tokenizer = M2M100Tokenizer.from_pretrained("facebook/m2m100_418M")
