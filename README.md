@@ -1,56 +1,86 @@
-# Multilingual Speech-to-Speech Translation Web App
+# Multilingual Speech Translator Web App (Flask + Whisper + M2M100 )
 
-This web application provides a user-friendly interface for multilingual speech-to-speech translation. It allows users to record speech in one language, have it translated to another language, and then hear the translated speech.
+This is a Flask-based web application that enables users to upload or record speech, detect the spoken language, translate it into another supported language, and convert the translated text back into speech using models from OpenAI Whisper and Facebook M2M100.
 
 ## Features
+- **Speech Recognition** using OpenAI's Whisper
+- **Translation** using Facebook's M2M100 model
+- **Text-to-Speech** using Microsoft's SpeechT5
+- **Web-based Interface** with CORS support for API integrations
 
-- **Speech Recognition**: Uses OpenAI's Whisper model to transcribe audio in multiple languages
-- **Translation**: Translates text between languages using Facebook's M2M100 model
-- **Text-to-Speech**: Converts translated text to speech using Microsoft's SpeechT5 model
-- **Interactive UI**: Features animations, audio recording, and playback functionality
-- **Responsive Design**: Works on desktop and mobile devices
+## Folder Structure
+```
+project/
+├── app.py                 # Main Flask application
+├── templates/
+│   └── index.html         # Web frontend
+├── temp_uploads/          # Temporary audio file storage
+└── requirements.txt       # Python dependencies
+```
 
-## Supported Languages
+## Setup Instructions
 
-### Input Languages (Automatic Detection)
-- English
-- Tamil
-- Hindi
+1. **Install Dependencies**
+```bash
+pip install -r requirements.txt
+sudo apt update && sudo apt install -y ffmpeg
+```
 
-### Output Languages
-- French
-- Spanish
-- German
-- Hindi
-- Tamil
+2. **Run the Application**
+```bash
+python main.py
+```
 
-## Technical Details
+3. **Open in Browser**
+```
+http://localhost:5000
+```
 
-### Technology Stack
+## Python Dependencies
+```txt
+flask
+flask_cors
+torch
+transformers
+datasets
+soundfile
+openai-whisper
+```
 
-- **Backend**: Flask, PyTorch, Whisper, Transformers, SoundFile
-- **Frontend**: HTML5, CSS3, JavaScript, Bootstrap, Font Awesome
-- **Audio Processing**: Web Audio API, WaveSurfer.js
+## Key Components
 
-### Machine Learning Models
+### 1. Model Initialization
+- `whisper` for automatic speech recognition.
+- `M2M100Tokenizer` and `M2M100ForConditionalGeneration` for multilingual translation.
+- `SpeechT5Processor`, `SpeechT5ForTextToSpeech`, and `SpeechT5HifiGan` for generating speech output.
+- CMU Arctic Xvectors dataset is used to obtain speaker embeddings for SpeechT5.
 
-- **ASR**: Whisper (small model)
-- **Translation**: M2M100 (418M parameter model)
-- **TTS**: SpeechT5 with HiFi-GAN vocoder
+### 2. Supported Languages
+```python
+WHISPER_TO_M2M100 = {"en": "en", "ta": "ta", "hi": "hi"}
+SUPPORTED_OUTPUT_LANGS = {"French": "fr", "Spanish": "es", "German": "de", "Hindi": "hi", "Tamil": "ta"}
+```
 
-## Getting Started
+### 3. Audio Processing Pipeline
+- Load and trim audio.
+- Convert to mel spectrogram and detect language using Whisper.
+- Translate using M2M100 based on detected and target languages.
+- Generate speech from translated text using SpeechT5 and vocoder.
+- Output file is saved temporarily and sent back to the user.
 
-### Prerequisites
+### 4. Flask Endpoints
+- `/` - Renders the HTML frontend.
+- `/check-models` - Asynchronously loads models.
+- `/upload-audio` - Accepts audio file or base64 string, processes it, and returns translated audio.
+- `/get-audio/<filename>` - Serves the generated audio file.
 
-- Python 3.8+
-- PyTorch
-- Flask
-- Other dependencies listed in `requirements.txt`
+## Error Handling
+- Graceful fallbacks if model fails to load or process.
+- Logs detailed error messages using Python’s `logging` module.
 
-### Installation
+## Future Improvements
+- Dockerize the application for production
 
-1. Clone the repository
-2. Install the required packages:
+---
 
-=======
-# speech-to-speech-translator
+Feel free to use this as a base template and customize it for more advanced use cases like emotion-based voice synthesis, speaker diarization, etc.
