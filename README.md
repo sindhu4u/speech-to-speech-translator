@@ -8,16 +8,6 @@ This is a Flask-based web application that enables users to upload or record spe
 - **Text-to-Speech** using Microsoft's SpeechT5
 - **Web-based Interface** with CORS support for API integrations
 
-## Folder Structure
-```
-project/
-├── app.py                 # Main Flask application
-├── templates/
-│   └── index.html         # Web frontend
-├── temp_uploads/          # Temporary audio file storage
-└── requirements.txt       # Python dependencies
-```
-
 ## Setup Instructions
 
 1. **Install Dependencies**
